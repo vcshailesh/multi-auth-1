@@ -1,0 +1,28 @@
+.error{
+    color:red;
+}
+.required{
+    color:red;
+}
+
+.form-section{        
+    margin-bottom: 15px;
+}
+
+.form-section > .form-section-header{
+    background: rgba(54,61,66,0.8);
+    color: #fff;
+    padding: 5px 15px;
+}
+.form-section > .form-section-header > h5{
+    margin: 0px;
+}
+.form-section > .form-section-body{
+    border:1px dashed rgba(54,61,66,1);
+    border-top:0px;
+    padding: 5px 15px;
+    background-color: #f1f1f1;
+}
+.mb-10{
+    margin-bottom: 10px;
+}
