@@ -9,7 +9,7 @@
 Route::group([
     // 'middleware' => ['auth:admin','role:admin|user'],
 ], function () {
-    Route::group(['namespace' => 'FrontUser'], function () {
+    Route::group(['namespace' => 'FrontUser','middleware' => 'check_user_is_active'], function () {
          
         /*  For DataTables */
          Route::any('/front-user-lists', 'FrontUserTableController')->name('front-user.lists');

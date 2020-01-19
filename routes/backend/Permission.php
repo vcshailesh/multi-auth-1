@@ -7,7 +7,7 @@
  */
 
 Route::group([
-    'middleware' => 'auth:admin',
+    'middleware' => 'auth:admin,check_user_is_active',
 ], function () {
     Route::group([
         'namespace' => 'Permission',

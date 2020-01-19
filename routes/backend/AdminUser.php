@@ -9,7 +9,7 @@
 Route::group([
     'middleware' => 'auth:admin',
 ], function () {
-    Route::group(['namespace' => 'AdminUser'], function () {
+    Route::group(['namespace' => 'AdminUser','middleware' => 'check_user_is_active'], function () {
          
         /*  For DataTables */
          Route::any('/admin-user-lists', 'AdminUserTableController')->name('admin-user.lists');
