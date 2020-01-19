@@ -45,7 +45,7 @@
     <div class="col-md-4">
         <div class="form-group">
             <label for="lable-type">Status<span class="required">*</span></label>
-            {!! Form::select('status',[''=>'']+config('backend.backend.status'), null , ['class' => 'form-control select2','id'=>'type','data-placeholder'=>'Select Status']) !!}
+            {!! Form::select('status',[''=>'']+config('backend.status'), null , ['class' => 'form-control select2','id'=>'type','data-placeholder'=>'Select Status']) !!}
         </div>
     </div>
 </div>

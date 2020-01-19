@@ -1,32 +1,32 @@
 <?php
 
-namespace App\Http\Controllers\Backend\AdminUser;
+namespace App\Http\Controllers\Backend\Role;
 
 use App\Http\Controllers\Controller;
-use App\Repositories\Backend\AdminUser\AdminUserRepository;
+use App\Models\Backend\Role\Role;
+use App\Repositories\Backend\Role\RoleRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Repositories\Backend\Role\RoleRepository;
-use App\Models\Backend\Admin;
+use App\Repositories\Backend\Permission\PermissionRepository;
 
-class AdminUserController extends Controller
+class RoleController extends Controller
 {
 
     /**
-     * @var AdminUserRepository
+     * @var RoleRepository
      */
-    protected $adminUserRepo;
     protected $roleRepo;
+    protected $permissionRepo;
 
     /**
-     * AdminUserRepository constructor.
-     * @param AdminUserRepository $adminUser
+     * RoleRepository constructor.
+     * @param RoleRepository $role
      */
-    public function __construct(AdminUserRepository $adminUserRepo,RoleRepository $roleRepo)
+    public function __construct(RoleRepository $roleRepo,PermissionRepository $permissionRepo)
     {
         $this->middleware('auth:admin');
-        $this->adminUserRepo = $adminUserRepo;
         $this->roleRepo = $roleRepo;
+        $this->permissionRepo = $permissionRepo;
     }
 
     /**
@@ -35,7 +35,7 @@ class AdminUserController extends Controller
     public function index()
     {
         try {
-            return view('backend.admin-user.index');
+            return view('backend.role.index');
         } catch (\Exception $ex) {
             Log::error($ex->getMessage());
         }
@@ -44,90 +44,79 @@ class AdminUserController extends Controller
     public function create()
     {
         try {
-            $roles = $this->roleRepo->getAll()->pluck('name','id');
-            return view('backend.admin-user.create',compact("roles"));
+            $permissions = $this->permissionRepo->getAll();
+            return view('backend.role.create',compact("permissions"));
         } catch (\Exception $ex) {
             Log::error($ex->getMessage());
         }
     }
 
     /**
-     * @param StoreAdminUserRequest $request
+     * @param StoreRoleRequest $request
      * @return mixed
      */
     public function store(Request $request)
     {
         try {
-        
-            // return  $request->all();
-            
-            $data= $this->adminUserRepo->create($request->only(                
-                'name',
-                'email',            
-                'mobile_number',            
-                'user_type',                
-                'password',
-                'status',
-                'icon'
+
+            $this->roleRepo->create($request->only(
+                'name','permissions'
             ));
-            
+
             toastr()->success('Data has been saved successfully!');
 
-            return redirect()->route('admin.admin-user.index');
+            return redirect()->route('admin.role.index');
         } catch (\Exception $ex) {
             Log::error($ex->getMessage());
         }
     }
 
     /**
-     * @param AdminUser $adminUser
+     * @param Role $role
      * @return mixed
      */
-    public function edit(Admin $adminUser)
-    {
-        try {               
-            $roles = $this->roleRepo->getAll()->pluck('name','id');
-            return view('backend.admin-user.edit',compact("roles"))->withAdminUser($adminUser);            
-        } catch (\Exception $ex) {
-            Log::error($ex->getMessage());
-        }
-    }
-
-    /**
-     * @param UpdateAdminUserRequest $request
-     * @param Admin $adminUser
-     * @return mixed
-     */
-    public function update(Request $request, Admin $adminUser)
+    public function edit(Role $role)
     {
         try {
-            $this->adminUserRepo->update($adminUser, $request->only(
-                'name',
-                'email',            
-                'mobile_number',            
-                'user_type',                
-                'password',
-                'status',
-                'icon'
+            $permissions = $this->permissionRepo->getAll();
+            $roleData = $this->roleRepo->edit($role);
+            $roleAssignedPermission = $roleData->permissions->pluck('id')->toArray();
+            return view('backend.role.edit', compact("permissions", "roleData",'roleAssignedPermission'))
+                ->withRole($role);
+        } catch (\Exception $ex) {
+            Log::error($ex->getMessage());
+        }
+    }
+
+    /**
+     * @param UpdateRoleRequest $request
+     * @param Role $role
+     * @return mixed
+     */
+    public function update(Request $request, Role $role)
+    {
+        try {
+            $this->roleRepo->update($role, $request->only(
+                'name','permissions'
             ));
 
             toastr()->success('Data has been updated successfully!');
 
-            return redirect()->route('admin.admin-user.index');
+            return redirect()->route('admin.role.index');
         } catch (\Exception $ex) {
             Log::error($ex->getMessage());
         }
     }
 
     /**
-     * @param Admin $adminUser
+     * @param Role $role
      * @return mixed
      */
     public function destroy(Request $request)
     {
         try {
-            $adminUser = Admin::findOrFail($request->id);
-            if ($adminUser->delete()) {
+            $role = Role::findOrFail($request->id);
+            if ($role->delete()) {
                 return response()->json(['success' => true, 'message' => 'Item deleted successfully']);
             }
             return response()->json(['error' => true, 'message' => 'Internal server error']);
@@ -138,14 +127,14 @@ class AdminUserController extends Controller
     }
 
     /**
-     * @param Admin $adminUser
+     * @param Role $role
      * @return array
      * @throws \Exception
      */
-    public function bulkDelete(Admin $adminUser)
+    public function bulkDelete(Role $role)
     {
         try {
-            $delete = $adminUser->whereIn('id', request('data'))->delete();
+            $delete = $role->whereIn('id', request('data'))->delete();
             if ($delete) {
                 return [
                     'success' => '1',
@@ -157,24 +146,39 @@ class AdminUserController extends Controller
         }
     }
 
+    public function changeStatus(Request $request)
+    {
+        try {
+            $Id = $request->id;
+            $role = Role::findOrFail($Id);
+            $role->status = $role->status == 1 ? 0 : 1;
+            $role->save();
+
+            return \response()->json(['success' => true,'message' => 'Change status successfully']);
+        }catch(\Exception $ex){
+            Log::error($ex->getMessage());
+            return \response()->json(['error' => true,'message' => $ex->getMessage()]);
+        }
+    }
+
     public function bulkAction(Request $request)
     {
         try {
             $actionType = $request->action_type;
 
-            $admin = Admin::query()->whereIn('id', request('data'));
+            $role = Role::query()->whereIn('id', request('data'));
 
             switch ($actionType) {
                 case '0':
-                    $admin->update(['status' => 0]);
+                    $role->update(['status' => 0]);
                     return response()->json(['success' => true, 'message' => 'In-Active record successfully']);
                     break;
                 case '1':
-                    $admin->update(['status' => 1]);
+                    $role->update(['status' => 1]);
                     return response()->json(['success' => true, 'message' => 'Active record successfully']);
                     break;
                 case '3':
-                    $admin->delete();
+                    $role->delete();
                     return response()->json(['success' => true, 'message' => 'Delete record successfully']);
                     break;
                 default:
@@ -183,21 +187,6 @@ class AdminUserController extends Controller
             }
         } catch (\Exception $ex) {
             Log::error($ex->getMessage());
-        }
-    }
-
-    public function changeStatus(Request $request)
-    {
-        try {
-            $Id = $request->id;
-            $admin = Admin::findOrFail($Id);
-            $admin->status = $admin->status == 1 ? 0 : 1;
-            $admin->save();
-
-            return \response()->json(['success' => true,'message' => 'Change status successfully']);
-        }catch(\Exception $ex){
-            Log::error($ex->getMessage());
-            return \response()->json(['error' => true,'message' => $ex->getMessage()]);
         }
     }
 }

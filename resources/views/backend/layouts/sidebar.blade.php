@@ -174,8 +174,8 @@
                 </li>
                 @endcan
                 @if(auth()->user()->is_superadmin == 1 || auth()->user()->can('Back Users'))
-                    <li class="nav-item has-treeview {{ (request()->is('admin/admin-user*')) ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ (request()->is('admin/admin-user*')) ? 'active' : '' }}">
+                    <li class="nav-item has-treeview {{ (request()->is('admin/*')) ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ (request()->is('admin/*')) ? 'active' : '' }}">
                             <i class="nav-icon fa fa-pie-chart"></i>
                             <p> Back User <i class="right fa fa-angle-left"></i>
                             </p>
@@ -192,8 +192,8 @@
                             @endif
                             @if(auth()->user()->is_superadmin == 1 || auth()->user()->can('Manage Role'))
                                 <li class="nav-item">
-                                    <a href="{{route('admin.user.role.index')}}"
-                                       class="nav-link {{ (request()->is('admin/user/role*')) ? 'active' : '' }}">
+                                    <a href="{{route('admin.role.index')}}"
+                                       class="nav-link {{ (request()->is('admin/role*')) ? 'active' : '' }}">
                                         <i class="fa fa-circle-o nav-icon"></i>
                                         <p>Role</p>
                                     </a>
@@ -201,8 +201,8 @@
                             @endif
                             @if(auth()->user()->is_superadmin == 1 || auth()->user()->can('Manage Permission'))
                                 <li class="nav-item">
-                                    <a href="{{route('admin.user.permission.index')}}"
-                                       class="nav-link {{ (request()->is('admin/user/permission*')) ? 'active' : '' }}">
+                                    <a href="{{route('admin.permission.index')}}"
+                                       class="nav-link {{ (request()->is('admin/permission*')) ? 'active' : '' }}">
                                         <i class="fa fa-circle-o nav-icon"></i>
                                         <p>Permission</p>
                                     </a>
