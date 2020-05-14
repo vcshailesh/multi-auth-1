@@ -15,5 +15,5 @@ yarn-error.log
 .env
 .phpunit.result.cache
 /public/assets/backend/images
-/bootstrap/
+/bootstrap/cache/
 /storage/logs/
